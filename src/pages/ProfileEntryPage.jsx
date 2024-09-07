@@ -1,25 +1,22 @@
-import { VStack, Heading, Button, Input, Text } from "@chakra-ui/react";
+import { VStack, HStack, Heading, Button, Input, Text, useToast, Image } from "@chakra-ui/react";
 import React from "react";
 import { useRouter } from "next/router";
 const { useState } = React;
 
 const ProfileEntryPage = (props) => {
-	const [firstName, setFirstName] = useState("");
-	const [lastName, setLastName] = useState("");
+	const [fullName, setFullName] = useState("");
 	const [email, setEmail] = useState("");
 	const [phoneNumber, setPhoneNumber] = useState("");
 
 	const router = useRouter();
+	const toast = useToast(); // Chakra UI toast hook
 
 	const handleChange = (e) => {
 		const value = e.target.value;
 		const name = e.target.name;
 		switch (name) {
-			case "firstName":
-				setFirstName(value);
-				break;
-			case "lastName":
-				setLastName(value);
+			case "fullName":
+				setFullName(value);
 				break;
 			case "email":
 				setEmail(value);
@@ -27,81 +24,131 @@ const ProfileEntryPage = (props) => {
 			case "phoneNumber":
 				setPhoneNumber(value);
 				break;
+			default:
+				break;
 		}
 	};
-	const handleVerify = () => {
-		console.log("Verifying...");
+
+	const handleConsent = () => {
 		// Verify the user's information
-		if (
-			firstName === "" ||
-			lastName === "" ||
-			email === "" ||
-			phoneNumber === ""
-		) {
-			alert("Please enter all fields");
+		if (fullName === "" || email === "" || phoneNumber === "") {
+			toast({
+				title: "Incomplete information.",
+				description: "Please fill in all fields.",
+				status: "warning", // Set status to 'warning' for yellow color
+				duration: 3000,    // Toast will auto-close after 3 seconds
+				isClosable: true,  // Allow the toast to be closed manually
+				position: "top",   // Show the toast at the top
+			});
 			return;
 		}
 		if (!email.includes("@") || !email.includes(".")) {
-			alert("Please enter a valid email address");
+			toast({
+				title: "Invalid email.",
+				description: "Please enter a valid email address.",
+				status: "error",   // Set status to 'error' for red color
+				duration: 3000,
+				isClosable: true,
+				position: "top",
+			});
 			return;
 		}
 		if (phoneNumber.length !== 10) {
-			alert("Please enter a valid phone number");
+			toast({
+				title: "Invalid phone number.",
+				description: "Phone number must be exactly 10 digits.",
+				status: "error",
+				duration: 3000,
+				isClosable: true,
+				position: "top",
+			});
 			return;
 		}
 
 		try {
-			// If the user is verified, save the user's information to the local storage
-			localStorage.setItem("firstName", firstName);
-			localStorage.setItem("lastName", lastName);
+			// Save user info in local storage and redirect to Verification Page
+			localStorage.setItem("fullName", fullName);
 			localStorage.setItem("email", email);
 			localStorage.setItem("phoneNumber", phoneNumber);
 
-			// Redirect the user to the Verification Page
-
 			router.push("/VerificationPage/ProveGraduate");
 		} catch (error) {
-			alert(`Error: ${error}`);
+			toast({
+				title: "Error occurred.",
+				description: `Error: ${error.message}`,
+				status: "error",
+				duration: 3000,
+				isClosable: true,
+				position: "top",
+			});
 		}
 	};
 
 	return (
-		<VStack h='100vh' justify='center' align='center' spacing={8}>
+		<VStack
+			h="100vh"
+			justify="center"
+			align="center"
+			spacing={8}
+			bg="black"
+			color="white"
+		>
+			{/* Proof of Consent Header */}
+			
+
 			<VStack>
-				<Heading size='lg'>Profile Entry</Heading>
-				<Text>
-					Enter your information below & Prove you are a graduate to access the
-					Job Board
+				{/* HStack to add the logo next to Profile Details */}
+				<HStack>
+					<Image
+						src="/verified.png" // Path to the verified logo
+						alt="Verified Logo"
+						boxSize="30px" // Adjust the size of the logo
+					/>
+					<Heading size="lg" color="blue.400">
+						Profile Details
+					</Heading>
+				</HStack>
+
+				<Text color="gray.400">
+					Enter your information to give consent for the utilization of your private information in Research
 				</Text>
 			</VStack>
-			<VStack spacing={4}>
+
+			<VStack spacing={4} w="100%" maxW="400px">
 				<Input
-					placeholder='First Name'
+					placeholder="Full Name"
 					onChange={handleChange}
-					name='firstName'
-					value={firstName}
+					name="fullName"
+					value={fullName}
+					bg="gray.700"
+					color="white"
 				/>
 				<Input
-					placeholder='Last Name'
+					placeholder="Email"
 					onChange={handleChange}
-					name='lastName'
-					value={lastName}
-				/>
-				<Input
-					placeholder='Email'
-					onChange={handleChange}
-					name='email'
+					name="email"
 					value={email}
+					bg="gray.700"
+					color="white"
 				/>
 				<Input
-					placeholder='Phone Number'
+					placeholder="Phone Number"
 					onChange={handleChange}
-					name='phoneNumber'
+					name="phoneNumber"
 					value={phoneNumber}
+					bg="gray.700"
+					color="white"
 				/>
 
-				<Button colorScheme='teal' size='lg' onClick={handleVerify} name=''>
-					Prove you're a graduate student
+				{/* Consent Button */}
+				<Button
+					colorScheme="blue"
+					size="lg"
+					onClick={handleConsent}
+					bg="blue.600"
+					_hover={{ bg: "blue.700" }}
+				>
+					Consent
 				</Button>
 			</VStack>
 		</VStack>
